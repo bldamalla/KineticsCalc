@@ -1,0 +1,5 @@
+# project ignore file
+
+*.vim
+Manifest.toml
+
