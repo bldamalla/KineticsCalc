@@ -1,0 +1,124 @@
+# test data for cleaner treatment... Strain is WT cytc
+
+description = "WT Cyt c with detergent"
+
+[Set1]
+subfolder = "Set1"
+description = "Iced DM buffer"
+date = 2022-07-21
+menten = true
+
+[[Set1.Series]]
+concentration = 0.3
+filename = "0.3.TXT"
+viewrange = [43.2, 58.2]
+blankat = 142.0
+
+[[Set1.Series]]
+concentration = 0.5
+filename = "0.5.TXT"
+viewrange = [40.2, 60.0]
+blankat = 140.0
+
+[[Set1.Series]]
+concentration = 0.75
+filename = "0.75.TXT"
+viewrange = [37.2, 63.8]
+blankat = 141.8
+
+[[Set1.Series]]
+concentration = 1.0
+filename = "1.TXT"
+viewrange = [41.2, 81.0]
+blankat = 136.0
+
+[[Set1.Series]]
+concentration = 1.5
+filename = "1.5.TXT"
+viewrange = [36.8, 76.4]
+blankat = 129.8
+
+[[Set1.Series]]
+concentration = 2.0
+filename = "2.TXT"
+viewrange = [42.6, 89.4]
+blankat = 162.2
+
+[[Set1.Series]]
+concentration = 3.0
+filename = "3.TXT"
+viewrange = [31.2, 95.6]
+blankat = 206.2
+
+[[Set1.Series]]
+concentration = 5.0
+filename = "5.TXT"
+viewrange = [50.2, 135.8]
+blankat = 225.8
+
+[[Set1.Series]]
+concentration = 7.5
+filename = "7.5.TXT"
+viewrange = [41.2, 97.4]
+blankat = 227.4
+
+[Set2]
+subfolder = "Set2"
+description = "Iced DM buffer"
+date = 2022-07-21
+menten = true
+
+[[Set2.Series]]
+concentration = 0.3
+filename = "0.3.TXT"
+viewrange = [43.4, 57.6]
+blankat = 110.6
+
+[[Set2.Series]]
+concentration = 0.5
+filename = "0.5.TXT"
+viewrange = [38.8, 54.6]
+blankat = 108.8
+
+[[Set2.Series]]
+concentration = 0.75
+filename = "0.75.TXT"
+viewrange = [20.4, 36.8]
+blankat = 83.4
+
+[[Set2.Series]]
+concentration = 1.0
+filename = "1.TXT"
+viewrange = [28.4, 63.2]
+blankat = 131.2
+
+[[Set2.Series]]
+concentration = 1.5
+filename = "1.5.TXT"
+viewrange = [34.0, 67.6]
+blankat = 110.0
+
+[[Set2.Series]]
+concentration = 2.0
+filename = "2.TXT"
+viewrange = [42.4, 79.0]
+blankat = 136.2
+
+[[Set2.Series]]
+concentration = 3.0
+filename = "3.TXT"
+viewrange = [42.0, 90.6]
+blankat = 169.2
+
+[[Set2.Series]]
+concentration = 5.0
+filename = "5.TXT"
+viewrange = [50.0, 110.4]
+blankat = 184.8
+
+[[Set2.Series]]
+concentration = 7.5
+filename = "7.5.TXT"
+viewrange = [40.8, 94.6]
+blankat = 193.2
+
