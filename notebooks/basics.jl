@@ -86,7 +86,7 @@ From the metadata of the set, construct a `SeriesSet` containing `AbsorbanceSeri
 objects for downstream calculation of rate constants and kinetic parameters. The
 argument `rawsfolder` is a path to the raw absorbance data.
 """
-function meta2series(meta, rawsfolder; method=:linear)
+function meta2series(meta, rawsfolder; method=:exp)
 	# series information is contained in "Series" key
 
 	# get the initial substrate concentrations at which the measurements are done
@@ -182,7 +182,7 @@ data is _relatively noisy_ (low signal-to-noise). In this case, this is given by
 measurements at ``0.3\text{μM}``.
 
 Cases where ``R^2 < 0.9`` usually occur when the manipulation parameters in a
-`AbsorbanceSeries` object is not properly chosen. It has been shown by previous
+`AbsorbanceSeries` object are not properly chosen. It has been shown by previous
 reports that cytochrome _c_ oxidation by its oxidase is first-order over a wide
 range of concentrations in _in vitro_ assays, so it is unlikely that the fitting
 model is at fault.
@@ -247,6 +247,87 @@ with_theme(plottheme) do
 	return fig1
 end
 
+# ╔═╡ 7b977a90-9d36-42b0-b909-165d63f76e76
+md"
+## Construction of `SetGroup` objects
+
+An important thing to take note of is that the two sets are supposed to be
+replicates of each other as they use the same solution of cytochrome _c_ and oxidase.
+Perhaps quite uninterestingly, the reaction rate curves pretty much overlap.
+
+For perhaps more rigorous comparisons, it might be desired to combine these two
+sets and work on the merged data points. The module provides this merging mechanism
+as follows.
+"
+
+# ╔═╡ 2ff400ff-3f30-46c6-a568-872e58fd72d4
+merged = CytCKinetics.setmerge(SetGroup, set1series, set2series)
+
+# ╔═╡ a9e6de11-c090-4e28-bb43-6d036d623ae2
+md"
+Similarly as above, this can also be fitted and plotted.
+"
+
+# ╔═╡ 85c21bda-06f8-4e69-bceb-1ee055ab9c2e
+mergedresults = CytCKinetics.fit(SetGroupResults, merged; method=:exp)
+
+# ╔═╡ fe62c03f-a346-4257-89cb-57665463634c
+with_theme(plottheme) do
+	(; concentrations, initrates, fitparams) = mergedresults
+	fig1, _, _ = scatter(concentrations, initrates; label="Merged", color=Cycled(3))
+	lines!(0.0:0.01:7.5, x->CytCKinetics.menten(x, fitparams); label="Merged", color=Cycled(3))
+
+	axislegend("Groups"; merge=true, position=:rc, orientation=:horizontal)
+	return fig1
+end
+
+# ╔═╡ 5d907e2c-366f-4355-9e2e-ee5bce3cc889
+md"
+## Confidence intervals and other statistics
+
+Within the results objects are the outputs of nonlinear regression by `LsqFit`.
+For the following examples, we will use results from the merged `SetGroup`. They
+can be accessed as follows.
+"
+
+# ╔═╡ 0e5c5041-3b71-416c-b49d-a995cd15f3fa
+# covariance matrix from fitting
+covmat = mergedresults.covmatrix
+
+# ╔═╡ a072c04f-428d-4a69-98f4-36bae13b3bdb
+# standard errors of kinetic parameters for Vmax and Km, respectively
+stderrs = sqrt.((covmat[1,1], covmat[2,2]))
+
+# ╔═╡ 602daaee-b938-4e58-be23-14e1d53949df
+# fitting degrees of freedom (N points - p params)
+dofN = length(mergedresults.concentrations) - length(mergedresults.fitparams)
+
+# ╔═╡ d5a4b723-f698-42f8-a6a2-71a9440ab332
+md"
+With these we can now calculate ``(1-α)\%`` confidence intervals for the kinetic
+parameters. These may then be used for hypothesis tests involving equality of
+parameters measured under different assay conditions.
+
+We first load the `Distributions` package for Student's ``t``-distribution.
+"
+
+# ╔═╡ cb7f9dfe-cad2-4c13-b3f8-72575de7e46e
+import Distributions
+
+# ╔═╡ 67cb4656-2832-44a0-99e0-bbce4c21fc10
+# set confidence level to α = 0.05
+α = 0.05
+
+# ╔═╡ 25b2e67b-4bb0-4999-9fbe-afafb566889f
+# get the inverse of the cdf of the appropriate t-distribution at 1-α/2
+tc = Distributions.quantile(Distributions.TDist(dofN), 1-α/2)
+
+# ╔═╡ e7ff0618-7430-4cf1-8676-c95f9a999ef4
+# confidence intervals for Vmax and Km
+confints = map(zip(mergedresults.fitparams, stderrs)) do (x, s)
+	return (x - tc*s, x + tc*s)
+end
+
 # ╔═╡ Cell order:
 # ╟─d42324a2-279e-4f00-889f-7539efb6d41a
 # ╟─3e28b968-22ef-11ed-2861-35bfb94e9fb2
@@ -256,7 +337,7 @@ end
 # ╟─bfa22544-1ccd-481b-b561-b0fc05507dcb
 # ╟─d3cd92ba-f634-4e5c-861b-09c6ff6433cf
 # ╟─4e929994-4670-4390-b64f-e3cbec934442
-# ╟─cdaf0f8c-94a4-44ec-aba8-9fa5f755b2ab
+# ╠═cdaf0f8c-94a4-44ec-aba8-9fa5f755b2ab
 # ╟─8bcc1551-fed3-4aa9-8b3f-d570f4a7f69a
 # ╠═d422d5d2-a177-4ff6-94f8-e114ad9008da
 # ╠═3b6b19fd-32a8-4278-ba36-2c73b7af49be
@@ -271,3 +352,17 @@ end
 # ╠═6eeafb5b-f669-4f24-a6b3-be64ce692853
 # ╟─cce345e7-cc71-4232-af9c-aec31b8c9fd8
 # ╠═2c039d5a-ecaf-46d2-b4c1-6bf2b429addb
+# ╟─7b977a90-9d36-42b0-b909-165d63f76e76
+# ╠═2ff400ff-3f30-46c6-a568-872e58fd72d4
+# ╟─a9e6de11-c090-4e28-bb43-6d036d623ae2
+# ╠═85c21bda-06f8-4e69-bceb-1ee055ab9c2e
+# ╠═fe62c03f-a346-4257-89cb-57665463634c
+# ╟─5d907e2c-366f-4355-9e2e-ee5bce3cc889
+# ╠═0e5c5041-3b71-416c-b49d-a995cd15f3fa
+# ╠═a072c04f-428d-4a69-98f4-36bae13b3bdb
+# ╠═602daaee-b938-4e58-be23-14e1d53949df
+# ╟─d5a4b723-f698-42f8-a6a2-71a9440ab332
+# ╠═cb7f9dfe-cad2-4c13-b3f8-72575de7e46e
+# ╠═67cb4656-2832-44a0-99e0-bbce4c21fc10
+# ╠═25b2e67b-4bb0-4999-9fbe-afafb566889f
+# ╠═e7ff0618-7430-4cf1-8676-c95f9a999ef4
